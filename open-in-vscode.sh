@@ -77,9 +77,32 @@ if [ ! -f "$file_path" ]; then
     exit 1
 fi
 
-echo "Opening $file_path at line $line_number in VSCode..."
+# Find the project root directory
+project_root=""
+current_dir=$(dirname "$file_path")
 
-# Open the file in VSCode at the specified line
+# Look for .xcodeproj or .xcworkspace going up the directory tree
+while [ "$current_dir" != "/" ]; do
+    if [ -n "$(find "$current_dir" -maxdepth 1 -name "*.xcodeproj" -o -name "*.xcworkspace" 2>/dev/null)" ]; then
+        project_root="$current_dir"
+        break
+    fi
+    current_dir=$(dirname "$current_dir")
+done
+
+# If no project root found, use the file's directory
+if [ -z "$project_root" ]; then
+    project_root=$(dirname "$file_path")
+    echo "Warning: No Xcode project found, using file directory: $project_root"
+else
+    echo "Found project root: $project_root"
+fi
+
+echo "Opening project in VSCode and navigating to $file_path at line $line_number..."
+
+# Open the project directory in VSCode, then navigate to the specific file and line
+code "$project_root"
+sleep 0.5  # Give VSCode a moment to open the project
 code --goto "$file_path:$line_number"
 
 echo "Done!"
