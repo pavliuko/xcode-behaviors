@@ -3,8 +3,8 @@
 # Script to open the currently active Xcode file in Cursor at the same cursor position
 # Usage: Configure as an Xcode Behavior with a keyboard shortcut
 
-# Enable debugging - output will go to Console.app (search for "open-in-cursor")
-exec > >(logger -t "open-in-cursor") 2>&1
+# Enable debugging - output will go to both terminal and Console.app
+exec > >(tee >(logger -t "open-in-cursor")) 2>&1
 echo "Script started at $(date)"
 echo "PATH: $PATH"
 echo "USER: $USER"
