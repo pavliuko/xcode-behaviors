@@ -23,8 +23,20 @@ Opens the entire Xcode project/workspace in Cursor and navigates to the currentl
 
 ## Troubleshooting
 
+### General Issues
 - **Script not running**: Check execute permissions (`chmod +x script.sh`)
 - **Path issues**: Use absolute paths in Xcode Behaviors
 - **Shortcut conflicts**: Use `Cmd + Shift + [Letter]` combinations
+
+### Cursor-Specific Issues
 - **Cursor not opening**: Install Cursor command line tools by opening Cursor and running "Shell Command: Install 'cursor' command in PATH" from Command Palette (`Cmd+Shift+P`)
 - **Wrong line position**: Script uses Xcode's cursor position; ensure cursor is placed where you want to jump to in Cursor
+
+### Xcode Behavior Issues
+If the script works in Terminal but not from Xcode Behaviors:
+
+1. **Check Console.app**: Open Console.app and search for "open-in-cursor" to see debug output
+2. **Verify script path**: Ensure you're using the absolute path in Xcode Behaviors: `/Users/[username]/Code/pavliuko/xcode-behaviors/open-in-cursor.sh`
+3. **AppleScript permissions**: Grant Terminal/Xcode permission to control other applications in System Settings → Privacy & Security → Automation
+4. **Test manually**: Run `./open-in-cursor.sh` from Terminal first to verify it works
+5. **Accessibility permissions**: Check if Xcode has Accessibility permissions in System Settings → Privacy & Security → Accessibility

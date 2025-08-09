@@ -3,13 +3,28 @@
 # Script to open the currently active Xcode file in Cursor at the same cursor position
 # Usage: Configure as an Xcode Behavior with a keyboard shortcut
 
+# Enable debugging - output will go to Console.app (search for "open-in-cursor")
+exec > >(logger -t "open-in-cursor") 2>&1
+echo "Script started at $(date)"
+echo "PATH: $PATH"
+echo "USER: $USER"
+echo "PWD: $PWD"
+
+# Fix PATH for Xcode behaviors - add common locations for cursor command
+export PATH="/usr/local/bin:/opt/homebrew/bin:/Applications/Cursor.app/Contents/Resources/app/bin:$PATH"
+
 # Check if Cursor is installed
+echo "Checking for cursor command..."
 if ! command -v cursor &> /dev/null; then
     echo "Error: Cursor command line tools not found. Install Cursor and add 'cursor' to your PATH."
+    echo "Current PATH: $PATH"
     exit 1
 fi
 
+echo "Found cursor at: $(which cursor)"
+
 # Get file path using AppleScript (filter for source files)
+echo "Getting file path from Xcode..."
 file_path=$(osascript -e '
 tell application "Xcode"
     try
@@ -33,7 +48,10 @@ tell application "Xcode"
 end tell
 ' 2>/dev/null)
 
+echo "File path result: '$file_path'"
+
 # Get line number using AppleScript (filter for same source file)
+echo "Getting line number from Xcode..."
 line_number=$(osascript -e '
 tell application "Xcode"
     try
@@ -65,11 +83,17 @@ tell application "Xcode"
 end tell
 ' 2>/dev/null)
 
+echo "Line number result: '$line_number'"
+
 # Check if we got valid data
 if [ -z "$file_path" ] || [ -z "$line_number" ]; then
     echo "Error: Could not get current file information from Xcode"
+    echo "File path: '$file_path'"
+    echo "Line number: '$line_number'"
     exit 1
 fi
+
+echo "Successfully got file info: $file_path at line $line_number"
 
 # Check if file exists
 if [ ! -f "$file_path" ]; then
@@ -101,8 +125,11 @@ fi
 echo "Opening project in Cursor and navigating to $file_path at line $line_number..."
 
 # Open the project directory in Cursor, then navigate to the specific file and line
+echo "Running: cursor '$project_root'"
 cursor "$project_root"
+echo "Cursor project opened, waiting 0.5 seconds..."
 sleep 0.5  # Give Cursor a moment to open the project
+echo "Running: cursor --goto '$file_path:$line_number'"
 cursor --goto "$file_path:$line_number"
 
-echo "Done!"
+echo "Done! Script completed successfully."
