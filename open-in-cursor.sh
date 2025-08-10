@@ -48,16 +48,16 @@ end tell
 
 echo "File path result: '$file_path'"
 
-# Get line number using AppleScript (from the last source document)
-echo "Getting line number from Xcode..."
-line_number=$(osascript -e "
+# Get line and column number using AppleScript
+echo "Getting cursor position from Xcode..."
+cursor_position=$(osascript -e "
 tell application \"Xcode\"
     try
         -- Get the filename from the current window title  
         set last_word_in_main_window to (word -1 of (get name of window 1))
         
         if (last_word_in_main_window is \"Edited\") then
-            return 1
+            return \"1:1\"
         else
             -- Find the same document and get cursor position
             set current_document to document 1 whose name ends with last_word_in_main_window
@@ -68,34 +68,44 @@ tell application \"Xcode\"
             
             -- Handle start-of-file
             if loc = 0 then
-                return 1
+                return \"1:1\"
             else
                 -- AppleScript text is 1-based; take the prefix up to loc characters
                 set prefix to text 1 thru loc of fullText
                 
                 -- Line number is number of paragraphs in the prefix
                 set lineNum to (count paragraphs of prefix)
-                return lineNum
+                
+                -- Column = length of last paragraph + 1 (caret is after the prefix)
+                set lastPara to paragraph -1 of prefix
+                set colNum to (length of lastPara) + 1
+                
+                return (lineNum as string) & \":\" & (colNum as string)
             end if
         end if
         
     on error
-        return 1
+        return \"1:1\"
     end try
 end tell
 " 2>/dev/null)
 
-echo "Line number result: '$line_number'"
+# Parse line and column from the result
+line_number=$(echo "$cursor_position" | cut -d: -f1)
+column_number=$(echo "$cursor_position" | cut -d: -f2)
+
+echo "Cursor position result: line $line_number, column $column_number"
 
 # Check if we got valid data
-if [ -z "$file_path" ] || [ -z "$line_number" ]; then
+if [ -z "$file_path" ] || [ -z "$line_number" ] || [ -z "$column_number" ]; then
     echo "Error: Could not get current file information from Xcode"
     echo "File path: '$file_path'"
-    echo "Line number: '$line_number'"
+    echo "Line: '$line_number'"
+    echo "Column: '$column_number'"
     exit 1
 fi
 
-echo "Successfully got file info: $file_path at line $line_number"
+echo "Successfully got file info: $file_path at line $line_number, column $column_number"
 
 # Check if file exists
 if [ ! -f "$file_path" ]; then
@@ -124,14 +134,13 @@ else
     echo "Found project root: $project_root"
 fi
 
-echo "Opening project in Cursor and navigating to $file_path at line $line_number..."
+echo "Opening project in Cursor and navigating to $file_path at line $line_number, column $column_number..."
 
-# Open the project directory in Cursor, then navigate to the specific file and line
+# Open the project directory in Cursor, then navigate to the specific file, line, and column
 echo "Running: cursor '$project_root'"
 cursor "$project_root"
-echo "Cursor project opened, waiting 0.5 seconds..."
-# sleep 0.5  # Give Cursor a moment to open the project
-echo "Running: cursor --goto '$file_path:$line_number'"
-cursor --goto "$file_path:$line_number"
+echo "Cursor project opened..."
+echo "Running: cursor --goto '$file_path:$line_number:$column_number'"
+cursor --goto "$file_path:$line_number:$column_number"
 
 echo "Done! Script completed successfully."
