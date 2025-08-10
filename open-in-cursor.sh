@@ -61,16 +61,22 @@ tell application \"Xcode\"
         else
             -- Find the same document and get cursor position
             set current_document to document 1 whose name ends with last_word_in_main_window
-            tell current_document
-                set textSelection to selection
-                set selectedRange to selected character range of textSelection
-                set startLocation to location of selectedRange
+            
+            -- Get the selected character range directly (loc is 0-based)
+            set {loc, len} to selected character range of current_document
+            set fullText to the text of current_document
+            
+            -- Handle start-of-file
+            if loc = 0 then
+                return 1
+            else
+                -- AppleScript text is 1-based; take the prefix up to loc characters
+                set prefix to text 1 thru loc of fullText
                 
-                set docText to contents as string
-                set textBeforeCursor to text 1 thru startLocation of docText
-                set lineNumber to (count of paragraphs of textBeforeCursor)
-                return lineNumber
-            end tell
+                -- Line number is number of paragraphs in the prefix
+                set lineNum to (count paragraphs of prefix)
+                return lineNum
+            end if
         end if
         
     on error
