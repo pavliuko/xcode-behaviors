@@ -56,8 +56,8 @@ end tell
 echo "File path result: '$file_path'"
 
 # Get line and column number using AppleScript
-echo "Getting cursor position from Xcode..."
-cursor_position=$(osascript -e "
+echo "Getting caret position from Xcode..."
+caret_position=$(osascript -e "
 tell application \"Xcode\"
     try
         -- Get the filename from the current window title  
@@ -66,7 +66,7 @@ tell application \"Xcode\"
         if (last_word_in_main_window is \"Edited\") then
             error \"Please save the current document before running this script\"
         else
-            -- Find the same document and get cursor position
+            -- Find the same document and get caret position
             set current_document to document 1 whose name ends with last_word_in_main_window
             
             -- Get the selected character range directly (loc is 0-based)
@@ -80,15 +80,15 @@ tell application \"Xcode\"
                 -- AppleScript text is 1-based; take the prefix up to loc characters
                 set prefix to text 1 thru loc of fullText
                 
-                -- Check if cursor is at end of line (prefix ends with newline)
+                -- Check if caret is at end of line (prefix ends with newline)
                 if prefix ends with return or prefix ends with linefeed then
-                    -- Cursor is at end of line, remove the newline for calculation
+                    -- Caret is at end of line, remove the newline for calculation
                     set prefixWithoutNewline to text 1 thru -2 of prefix
                     set lineNum to (count paragraphs of prefixWithoutNewline)
                     set lastPara to paragraph -1 of prefixWithoutNewline
                     set colNum to (length of lastPara) + 1
                 else
-                    -- Normal case: cursor is in middle of line
+                    -- Normal case: caret is in middle of line
                     set lineNum to (count paragraphs of prefix)
                     set lastPara to paragraph -1 of prefix
                     set colNum to (length of lastPara)
@@ -110,11 +110,11 @@ tell application \"Xcode\"
 end tell
 " 2>/dev/null)
 
-# Parse line and column from the result
-line_number=$(echo "$cursor_position" | cut -d: -f1)
-column_number=$(echo "$cursor_position" | cut -d: -f2)
+# Parse line and column from the result  
+line_number=$(echo "$caret_position" | cut -d: -f1)
+column_number=$(echo "$caret_position" | cut -d: -f2)
 
-echo "Cursor position result: line $line_number, column $column_number"
+echo "Caret position result: line $line_number, column $column_number"
 
 # Check if we got valid data
 if [ -z "$file_path" ] || [ -z "$line_number" ] || [ -z "$column_number" ]; then

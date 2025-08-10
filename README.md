@@ -19,11 +19,11 @@ Opens the folder containing build products, indexes, and simulator data.
 ### Open Project in Cursor
 **Script**: `open-in-cursor.sh`  
 
-Opens the entire Xcode project/workspace in Cursor and navigates to the currently active file at the exact cursor position (line and column). 
+Opens the entire Xcode project/workspace in Cursor and navigates to the currently active file at the exact caret position (line and column). 
 
 **Features:**
 - **Smart file detection**: Uses Xcode's window title to identify the currently active file
-- **Precise cursor positioning**: Maintains exact line and column position from Xcode
+- **Precise caret positioning**: Maintains exact line and column position from Xcode
 - **Automatic project detection**: Finds project root by locating `.xcodeproj` or `.xcworkspace` files
 - **Comprehensive error handling**: Provides clear feedback for common issues
 - **No delays needed**: Single command execution for optimal performance
@@ -39,7 +39,7 @@ Opens the entire Xcode project/workspace in Cursor and navigates to the currentl
 
 ### Cursor-Specific Issues
 - **Cursor not opening**: Install Cursor command line tools by opening Cursor and running "Shell Command: Install 'cursor' command in PATH" from Command Palette (`Cmd+Shift+P`)
-- **Wrong cursor position**: Script uses Xcode's exact cursor position (line and column); ensure the file is saved and cursor is positioned correctly
+- **Wrong caret position**: Script uses Xcode's exact caret position (line and column); ensure the file is saved and caret is positioned correctly
 - **File not found**: Ensure the file is open and active in Xcode's main window
 - **"Edited" document error**: Save unsaved changes in Xcode before running the script
 
@@ -64,4 +64,4 @@ If the script works in Terminal but not from Xcode Behaviors:
    - Name: "Open in Cursor"
    - Script path: `/Users/[your-username]/Code/pavliuko/xcode-behaviors/open-in-cursor.sh`
    - Assign keyboard shortcut (e.g., `Cmd+Shift+C`)
-3. **Test**: Open a file in Xcode, position cursor, and use your shortcut
+3. **Test**: Open a file in Xcode, position caret, and use your shortcut
