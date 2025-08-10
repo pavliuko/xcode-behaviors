@@ -76,9 +76,9 @@ tell application \"Xcode\"
                 -- Line number is number of paragraphs in the prefix
                 set lineNum to (count paragraphs of prefix)
                 
-                -- Column = length of last paragraph + 1 (caret is after the prefix)
+                -- Column = length of last paragraph (no +1 needed)
                 set lastPara to paragraph -1 of prefix
-                set colNum to (length of lastPara) + 1
+                set colNum to (length of lastPara)
                 
                 return (lineNum as string) & \":\" & (colNum as string)
             end if
