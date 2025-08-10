@@ -10,7 +10,8 @@ echo "PATH: $PATH"
 echo "USER: $USER"
 echo "PWD: $PWD"
 
-# Fix PATH for Xcode behaviors - add common locations for cursor command
+# Xcode behaviors have limited PATH - add common Cursor locations
+# This is needed because Xcode behaviors don't inherit the full shell PATH
 export PATH="/usr/local/bin:/opt/homebrew/bin:/Applications/Cursor.app/Contents/Resources/app/bin:$PATH"
 
 # Check if Cursor is installed
@@ -32,7 +33,7 @@ tell application \"Xcode\"
         set last_word_in_main_window to (word -1 of (get name of window 1))
         
         if (last_word_in_main_window is \"Edited\") then
-            error \"Please save the current document and try again\"
+            error \"Please save the current document before running this script\"
         else
             -- Find the document whose name ends with the filename from window title
             set current_document to document 1 whose name ends with last_word_in_main_window
@@ -41,7 +42,13 @@ tell application \"Xcode\"
         end if
         
     on error errMsg
-        error errMsg
+        if errMsg contains \"Can't get document\" then
+            error \"No matching document found - ensure file is open in Xcode\"
+        else if errMsg contains \"Can't get window\" then
+            error \"No Xcode window found - ensure Xcode is active\"
+        else
+            error errMsg
+        end if
     end try
 end tell
 " 2>/dev/null)
@@ -57,7 +64,7 @@ tell application \"Xcode\"
         set last_word_in_main_window to (word -1 of (get name of window 1))
         
         if (last_word_in_main_window is \"Edited\") then
-            return \"1:1\"
+            error \"Please save the current document before running this script\"
         else
             -- Find the same document and get cursor position
             set current_document to document 1 whose name ends with last_word_in_main_window
@@ -91,8 +98,14 @@ tell application \"Xcode\"
             end if
         end if
         
-    on error
-        return \"1:1\"
+    on error errMsg
+        if errMsg contains \"Can't get document\" then
+            return \"1:1\"
+        else if errMsg contains \"Can't get window\" then
+            return \"1:1\"
+        else
+            return \"1:1\"
+        end if
     end try
 end tell
 " 2>/dev/null)
@@ -136,7 +149,7 @@ done
 # If no project root found, use the file's directory
 if [ -z "$project_root" ]; then
     project_root=$(dirname "$file_path")
-    echo "Warning: No Xcode project found, using file directory: $project_root"
+    echo "Warning: No Xcode project found in parent directories, using file directory: $project_root"
 else
     echo "Found project root: $project_root"
 fi
