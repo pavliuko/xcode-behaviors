@@ -23,65 +23,61 @@ fi
 
 echo "Found cursor at: $(which cursor)"
 
-# Get file path using AppleScript (filter for source files)
+# Get file path using AppleScript (get the last source document which is usually the active one)
 echo "Getting file path from Xcode..."
-file_path=$(osascript -e '
-tell application "Xcode"
+file_path=$(osascript -e "
+tell application \"Xcode\"
     try
-        set allDocs to documents
-        repeat with doc in allDocs
-            try
-                set docPath to path of doc
-                -- Check if this is a source file (not project file)
-                if docPath contains "/" and not (docPath ends with ".xcodeproj" or docPath ends with ".xcworkspace" or docPath ends with ".playground") then
-                    -- Check for common source file extensions
-                    if docPath ends with ".swift" or docPath ends with ".m" or docPath ends with ".mm" or docPath ends with ".h" or docPath ends with ".c" or docPath ends with ".cpp" or docPath ends with ".cc" or docPath ends with ".cxx" or docPath ends with ".py" or docPath ends with ".js" or docPath ends with ".ts" or docPath ends with ".java" or docPath ends with ".kt" or docPath ends with ".go" or docPath ends with ".rs" or docPath ends with ".rb" or docPath ends with ".php" or docPath ends with ".html" or docPath ends with ".css" or docPath ends with ".json" or docPath ends with ".xml" or docPath ends with ".txt" or docPath ends with ".md" then
-                        return docPath
-                    end if
-                end if
-            end try
-        end repeat
-        error "No source file found"
+        -- Get the filename from the current window title
+        set last_word_in_main_window to (word -1 of (get name of window 1))
+        
+        if (last_word_in_main_window is \"Edited\") then
+            error \"Please save the current document and try again\"
+        else
+            -- Find the document whose name ends with the filename from window title
+            set current_document to document 1 whose name ends with last_word_in_main_window
+            set current_document_path to path of current_document
+            return current_document_path
+        end if
+        
     on error errMsg
         error errMsg
     end try
 end tell
-' 2>/dev/null)
+" 2>/dev/null)
 
 echo "File path result: '$file_path'"
 
-# Get line number using AppleScript (filter for same source file)
+# Get line number using AppleScript (from the last source document)
 echo "Getting line number from Xcode..."
-line_number=$(osascript -e '
-tell application "Xcode"
+line_number=$(osascript -e "
+tell application \"Xcode\"
     try
-        set allDocs to documents
-        repeat with doc in allDocs
-            try
-                set docPath to path of doc
-                -- Check if this is a source file (same logic as above)
-                if docPath contains "/" and not (docPath ends with ".xcodeproj" or docPath ends with ".xcworkspace" or docPath ends with ".playground") then
-                    if docPath ends with ".swift" or docPath ends with ".m" or docPath ends with ".mm" or docPath ends with ".h" or docPath ends with ".c" or docPath ends with ".cpp" or docPath ends with ".cc" or docPath ends with ".cxx" or docPath ends with ".py" or docPath ends with ".js" or docPath ends with ".ts" or docPath ends with ".java" or docPath ends with ".kt" or docPath ends with ".go" or docPath ends with ".rs" or docPath ends with ".rb" or docPath ends with ".php" or docPath ends with ".html" or docPath ends with ".css" or docPath ends with ".json" or docPath ends with ".xml" or docPath ends with ".txt" or docPath ends with ".md" then
-                        tell doc
-                            set textSelection to selection
-                            set selectedRange to selected character range of textSelection
-                            set startLocation to location of selectedRange
-                            
-                            set docText to contents as string
-                            set textBeforeCursor to text 1 thru startLocation of docText
-                            set lineNumber to (count of paragraphs of textBeforeCursor)
-                            return lineNumber
-                        end tell
-                    end if
-                end if
-            end try
-        end repeat
-        return 1
+        -- Get the filename from the current window title  
+        set last_word_in_main_window to (word -1 of (get name of window 1))
+        
+        if (last_word_in_main_window is \"Edited\") then
+            return 1
+        else
+            -- Find the same document and get cursor position
+            set current_document to document 1 whose name ends with last_word_in_main_window
+            tell current_document
+                set textSelection to selection
+                set selectedRange to selected character range of textSelection
+                set startLocation to location of selectedRange
+                
+                set docText to contents as string
+                set textBeforeCursor to text 1 thru startLocation of docText
+                set lineNumber to (count of paragraphs of textBeforeCursor)
+                return lineNumber
+            end tell
+        end if
+        
     on error
         return 1
     end try
 end tell
-' 2>/dev/null)
+" 2>/dev/null)
 
 echo "Line number result: '$line_number'"
 
@@ -128,7 +124,7 @@ echo "Opening project in Cursor and navigating to $file_path at line $line_numbe
 echo "Running: cursor '$project_root'"
 cursor "$project_root"
 echo "Cursor project opened, waiting 0.5 seconds..."
-sleep 0.5  # Give Cursor a moment to open the project
+# sleep 0.5  # Give Cursor a moment to open the project
 echo "Running: cursor --goto '$file_path:$line_number'"
 cursor --goto "$file_path:$line_number"
 
