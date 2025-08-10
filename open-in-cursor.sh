@@ -157,10 +157,8 @@ fi
 echo "Opening project in Cursor and navigating to $file_path at line $line_number, column $column_number..."
 
 # Open the project directory in Cursor, then navigate to the specific file, line, and column
-echo "Running: cursor '$project_root'"
-cursor "$project_root"
-echo "Cursor project opened..."
-echo "Running: cursor --goto '$file_path:$line_number:$column_number'"
-cursor --goto "$file_path:$line_number:$column_number"
+echo "Running: cursor '$project_root' --goto '$file_path:$line_number:$column_number'"
+cursor "$project_root" --goto "$file_path:$line_number:$column_number"
+# echo "Cursor project opened..."
 
 echo "Done! Script completed successfully."
