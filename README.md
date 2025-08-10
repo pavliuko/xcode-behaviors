@@ -2,6 +2,8 @@
 
 Custom Xcode behaviors and shell scripts for iOS/macOS development productivity.
 
+![Xcode Behaviors Menu](xcode-behaviors-menu.png)
+
 ## Quick Setup
 
 1. Clone this repository
@@ -12,7 +14,7 @@ Custom Xcode behaviors and shell scripts for iOS/macOS development productivity.
 ## Available Behaviors
 
 ### Open Derived Data Folder
-**Script**: `open-derived-data.sh`  
+**Script**: `behaviors/open-derived-data.sh`  
 
 Opens the folder containing build products, indexes, and simulator data.
 
