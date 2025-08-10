@@ -73,12 +73,19 @@ tell application \"Xcode\"
                 -- AppleScript text is 1-based; take the prefix up to loc characters
                 set prefix to text 1 thru loc of fullText
                 
-                -- Line number is number of paragraphs in the prefix
-                set lineNum to (count paragraphs of prefix)
-                
-                -- Column = length of last paragraph (no +1 needed)
-                set lastPara to paragraph -1 of prefix
-                set colNum to (length of lastPara)
+                -- Check if cursor is at end of line (prefix ends with newline)
+                if prefix ends with return or prefix ends with linefeed then
+                    -- Cursor is at end of line, remove the newline for calculation
+                    set prefixWithoutNewline to text 1 thru -2 of prefix
+                    set lineNum to (count paragraphs of prefixWithoutNewline)
+                    set lastPara to paragraph -1 of prefixWithoutNewline
+                    set colNum to (length of lastPara) + 1
+                else
+                    -- Normal case: cursor is in middle of line
+                    set lineNum to (count paragraphs of prefix)
+                    set lastPara to paragraph -1 of prefix
+                    set colNum to (length of lastPara)
+                end if
                 
                 return (lineNum as string) & \":\" & (colNum as string)
             end if
